@@ -1,24 +1,37 @@
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
+from astrbot.api.message_components import Node, Plain
 
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
-class MyPlugin(Star):
+
+@register("revoke-long-msg", "HakimYu", "检测并处理长消息", "1.0.0")
+class LongMessageHandler(Star):
     def __init__(self, context: Context):
         super().__init__(context)
+        self.max_length = 100  # 设置最大消息长度
 
     async def initialize(self):
-        """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
-    
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        """这是一个 hello world 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+        """插件初始化方法"""
+        pass
 
-    async def terminate(self):
-        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+    @filter.message(filter.EventMessageType.GROUP_MESSAGE)
+    async def handle_message(self, event: AstrMessageEvent):
+        """处理所有消息，检测长度并处理"""
+        message_str = event.message_str
+        if len(message_str) > self.max_length:
+            # 获取发送者信息
+            sender_name = event.get_sender_name()
+            sender_id = event.get_sender_id()
+
+            # 创建合并转发节点
+            node = Node(
+                uin=sender_id,
+                name=sender_name,
+                content=[Plain(message_str)]
+            )
+
+            # 撤回原消息
+            await event.revoke()
+
+            # 发送合并转发消息
+            yield event.chain_result([node])

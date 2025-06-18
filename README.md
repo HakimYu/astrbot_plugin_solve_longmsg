@@ -1,9 +1,3 @@
-# helloworld
+# revoke-resend-long-msg
 
-AstrBot 插件模板
-
-A template plugin for AstrBot plugin feature
-
-# 支持
-
-[帮助文档](https://astrbot.app)
+撤回并合并转发，发送长消息
