@@ -1,0 +1,14 @@
+{
+  "max_length": {
+    "description": "触发合并转发的消息长度阈值",
+    "type": "int",
+    "hint": "当消息长度超过此值时，将触发合并转发",
+    "default": 100
+  },
+  "group_whitelist": {
+    "description": "群白名单",
+    "type": "list",
+    "hint": "在此列表中的群才会触发长消息处理",
+    "default": []
+  }
+}
