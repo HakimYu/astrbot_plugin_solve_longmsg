@@ -11,6 +11,17 @@ class LongMessageHandler(Star):
         super().__init__(context)
         self.config = config
 
+    def _create_forward_node(self, user_id: str, nickname: str, content: str) -> dict:
+        """创建转发节点"""
+        return {
+            "type": "node",
+            "data": {
+                "user_id": user_id,
+                "nickname": nickname,
+                "content": [{"type": "text", "data": {"text": content}}]
+            }
+        }
+
     @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
     async def handle_message(self, event: AstrMessageEvent):
         """处理所有消息，检测长度并处理"""
@@ -23,6 +34,7 @@ class LongMessageHandler(Star):
             # 获取发送者信息
             sender_name = event.get_sender_name()
             sender_id = event.get_sender_id()
+            
             # 撤回原消息
             if event.get_platform_name() == "aiocqhttp":
                 assert isinstance(event, AiocqhttpMessageEvent)
@@ -34,25 +46,10 @@ class LongMessageHandler(Star):
                 logger.info(f"delete_msg: {ret}")
 
                 # 发送合并转发消息
+                node = self._create_forward_node(str(sender_id), sender_name, message_str)
                 forward_payloads = {
                     "group_id": group_id,
-                    "messages": [
-                        {
-                            "type": "node",
-                            "data": {
-                                "user_id": str(sender_id),
-                                "nickname": sender_name,
-                                "content": [
-                                    {
-                                        "type": "text",
-                                        "data": {
-                                            "text": message_str
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
+                    "messages": [node]
                 }
                 ret = await client.api.call_action('send_group_forward_msg', **forward_payloads)
                 return
