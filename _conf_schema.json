@@ -3,12 +3,50 @@
     "description": "触发合并转发的消息长度阈值",
     "type": "int",
     "hint": "当消息长度超过此值时，将触发合并转发",
-    "default": 100
+    "default": 100,
+    "min": 1,
+    "max": 10000
   },
   "group_whitelist": {
     "description": "群白名单",
     "type": "list",
-    "hint": "在此列表中的群才会触发长消息处理",
+    "hint": "在此列表中的群才会触发长消息处理，为空则处理所有群",
     "default": []
+  },
+  "enable_fallback": {
+    "description": "启用备选消息机制",
+    "type": "bool",
+    "hint": "当合并转发失败时，是否发送普通消息作为备选",
+    "default": true
+  },
+  "fallback_preview_length": {
+    "description": "备选消息预览长度",
+    "type": "int",
+    "hint": "备选消息中显示的消息预览长度",
+    "default": 100,
+    "min": 10,
+    "max": 500
+  },
+  "enable_logging": {
+    "description": "启用详细日志记录",
+    "type": "bool",
+    "hint": "是否记录详细的操作日志",
+    "default": true
+  },
+  "retry_count": {
+    "description": "操作重试次数",
+    "type": "int",
+    "hint": "撤回或发送消息失败时的重试次数",
+    "default": 2,
+    "min": 0,
+    "max": 5
+  },
+  "retry_delay": {
+    "description": "重试延迟（秒）",
+    "type": "float",
+    "hint": "重试操作之间的延迟时间",
+    "default": 1.0,
+    "min": 0.1,
+    "max": 10.0
   }
 }
