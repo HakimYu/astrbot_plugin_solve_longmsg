@@ -1,7 +1,7 @@
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
+from astrbot.api.event import filter, AstrMessageEvent, MessageChain
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger, AstrBotConfig
-from astrbot.api.message_components import Node, Plain
+from astrbot.api.message_components import Node, Plain, Nodes
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
@@ -23,14 +23,6 @@ class LongMessageHandler(Star):
             # 获取发送者信息
             sender_name = event.get_sender_name()
             sender_id = event.get_sender_id()
-
-            # 创建合并转发节点
-            node = Node(
-                uin=sender_id,
-                name=sender_name,
-                content=[Plain(message_str)]
-            )
-
             # 撤回原消息
             if event.get_platform_name() == "aiocqhttp":
                 assert isinstance(event, AiocqhttpMessageEvent)
@@ -41,5 +33,26 @@ class LongMessageHandler(Star):
                 ret = await client.api.call_action('delete_msg', **payloads)
                 logger.info(f"delete_msg: {ret}")
 
-            # 发送合并转发消息
-            yield event.chain_result([node])
+                # 发送合并转发消息
+                forward_payloads = {
+                    "group_id": group_id,
+                    "messages": [
+                        {
+                            "type": "node",
+                            "data": {
+                                "user_id": str(sender_id),
+                                "nickname": sender_name,
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "data": {
+                                            "text": message_str
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+                ret = await client.api.call_action('send_group_forward_msg', **forward_payloads)
+                return
