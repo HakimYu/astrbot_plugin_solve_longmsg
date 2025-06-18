@@ -2,6 +2,7 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger, AstrBotConfig
 from astrbot.api.message_components import Node, Plain
+from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
 @register("revoke-long-msg", "HakimYu", "检测并处理长消息", "1.0.0")
@@ -31,7 +32,14 @@ class LongMessageHandler(Star):
             )
 
             # 撤回原消息
-            await event.revoke()
+            if event.get_platform_name() == "aiocqhttp":
+                assert isinstance(event, AiocqhttpMessageEvent)
+                client = event.bot
+                payloads = {
+                    "message_id": event.message_obj.message_id,
+                }
+                ret = await client.api.call_action('delete_msg', **payloads)
+                logger.info(f"delete_msg: {ret}")
 
             # 发送合并转发消息
             yield event.chain_result([node])
