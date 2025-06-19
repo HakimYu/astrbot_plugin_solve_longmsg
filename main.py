@@ -5,7 +5,7 @@ from astrbot.api.message_components import Node, Plain, Nodes
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
-@register("revoke-long-msg", "HakimYu", "检测并处理长消息", "1.0.0")
+@register("solve_longmsg", "HakimYu", "检测并处理长消息", "1.0.1")
 class LongMessageHandler(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)

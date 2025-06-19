@@ -1,5 +1,5 @@
-name: revoke-resend-long-msg # 这是你的插件的唯一识别名。
+name: solve_longmsg # 这是你的插件的唯一识别名。
 desc: 撤回并合并转发，发送长消息 # 插件简短描述
-version: v1.0 # 插件版本号。格式：v1.1.1 或者 v1.1
+version: v1.0.1 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: HakimYu # 作者
-repo: https://github.com/HakimYu/revoke-resend-long-msg # 插件的仓库地址
+repo: https://github.com/HakimYu/astrbot_plugin_solve_longmsg # 插件的仓库地址
