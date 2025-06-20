@@ -5,22 +5,12 @@ from astrbot.api.message_components import Node, Plain, Nodes
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
-@register("solve_longmsg", "HakimYu", "检测并处理长消息", "1.0.1")
+@register("solve_longmsg", "HakimYu", "检测并处理长消息", "1.0.2")
 class LongMessageHandler(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.config = config
 
-    def _create_forward_node(self, user_id: str, nickname: str, content: str) -> dict:
-        """创建转发节点"""
-        return {
-            "type": "node",
-            "data": {
-                "user_id": user_id,
-                "nickname": nickname,
-                "content": [{"type": "text", "data": {"text": content}}]
-            }
-        }
 
     @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
     async def handle_message(self, event: AstrMessageEvent):
@@ -34,22 +24,17 @@ class LongMessageHandler(Star):
             # 获取发送者信息
             sender_name = event.get_sender_name()
             sender_id = event.get_sender_id()
-            
             # 撤回原消息
             if event.get_platform_name() == "aiocqhttp":
                 assert isinstance(event, AiocqhttpMessageEvent)
                 client = event.bot
-                payloads = {
-                    "message_id": event.message_obj.message_id,
-                }
-                ret = await client.api.call_action('delete_msg', **payloads)
-                logger.info(f"delete_msg: {ret}")
+                await client.delete_msg(message_id=int(event.message_obj.message_id))
 
                 # 发送合并转发消息
-                node = self._create_forward_node(str(sender_id), sender_name, message_str)
-                forward_payloads = {
-                    "group_id": group_id,
-                    "messages": [node]
-                }
-                ret = await client.api.call_action('send_group_forward_msg', **forward_payloads)
-                return
+                node = Node(
+                    uin=sender_id,
+                    name=sender_name,
+                    content=[Plain(message_str)]
+                )
+                await event.send(event.chain_result([node]))
+                event.stop_event()
