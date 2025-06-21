@@ -6,7 +6,7 @@ from astrbot.core.message.message_event_result import MessageChain
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
-@register("solve_longmsg", "HakimYu", "撤回并合并转发群员或者机器人的长消息", "1.1.1")
+@register("solve_longmsg", "HakimYu", "撤回并合并转发群员或者机器人的长消息", "1.1.2")
 class LongMessageHandler(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -32,13 +32,19 @@ class LongMessageHandler(Star):
                     await client.delete_msg(message_id=int(event.message_obj.message_id))
                 except Exception as e:
                     logger.info(f"消息撤回失败: {e}，可能已被手动撤回，取消转发。")
-
-                # 储存消息链
-                self.message_chain = MessageChain([Node(
-                    uin=event.get_sender_id(),
-                    name=event.get_sender_name(),
-                    content=event.get_messages()
-                )])
+                if event.is_at_or_wake_command:
+                    # 储存消息链
+                    self.message_chain = MessageChain([Node(
+                        uin=event.get_sender_id(),
+                        name=event.get_sender_name(),
+                        content=event.get_messages()
+                    )])
+                else:
+                    return event.chain_result([Node(
+                        uin=event.get_sender_id(),
+                        name=event.get_sender_name(),
+                        content=event.get_messages()
+                    )])
 
     @filter.on_decorating_result()
     async def on_decorating_result(self, event: AstrMessageEvent):
