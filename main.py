@@ -28,7 +28,11 @@ class LongMessageHandler(Star):
             if event.get_platform_name() == "aiocqhttp":
                 assert isinstance(event, AiocqhttpMessageEvent)
                 client = event.bot
-                await client.delete_msg(message_id=int(event.message_obj.message_id))
+                try:
+                    await client.delete_msg(message_id=int(event.message_obj.message_id))
+                except Exception as e:
+                    logger.info(f"消息撤回失败: {e}，可能已被手动撤回，取消转发。")
+                    return
 
                 # 发送合并转发消息
                 node = Node(
