@@ -10,5 +10,17 @@
     "type": "list",
     "hint": "在此列表中的群才会触发长消息处理",
     "default": []
+  },
+  "solve_group_member": {
+    "description": "处理群成员消息",
+    "type": "bool",
+    "hint": "是否处理群成员消息",
+    "default": false
+  },
+  "solve_self_message": {
+    "description": "处理自身消息",
+    "type": "bool",
+    "hint": "是否处理自身消息",
+    "default": true
   }
 }
